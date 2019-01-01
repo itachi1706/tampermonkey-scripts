@@ -1,8 +1,9 @@
 // ==UserScript==
 // @name         Server Time
 // @namespace    http://tampermonkey.net/
-// @version      0.5
+// @version      0.6
 // @description  Guesstimate Server Time for NTU STARS Server
+// @updateURL    https://github.com/itachi1706/tampermonkey-scripts/raw/master/ServerTime.user.js
 // @author       Kenneth Soh (itachi1706)
 // @match        https://wish.wis.ntu.edu.sg/pls/webexe/AUS_STARS_PLANNER.planner
 // @grant        none
