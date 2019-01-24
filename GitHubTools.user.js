@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHub Tools
 // @namespace    http://itachi1706.com/
-// @version      0.1
+// @version      1.0
 // @description  Small tweaks to GitHub for QoL improvements
 // @author       Kenneth Soh (itachi1706) <kenneth@itachi1706.com>
 // @updateURL    https://github.com/itachi1706/tampermonkey-scripts/raw/master/GitHubTools.user.js
