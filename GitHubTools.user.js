@@ -14,7 +14,7 @@
     'use strict';
 
     // Your code here...
-    var debug = true;
+    var debug = false;
     var verbose = false;
     console.log("Activating script " + GM_info.script.name + " by " + GM_info.script.author + ". Version: " + GM_info.script.version);
     var $ = window.jQuery;
