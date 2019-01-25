@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHub Tools
 // @namespace    http://itachi1706.com/
-// @version      1.0
+// @version      1.1
 // @description  Small tweaks to GitHub for QoL improvements
 // @author       Kenneth Soh (itachi1706) <kenneth@itachi1706.com>
 // @updateURL    https://github.com/itachi1706/tampermonkey-scripts/raw/master/GitHubTools.user.js
@@ -31,13 +31,14 @@
         var pathname = $(location).attr("pathname");
         if (debug) console.log(pathname);
         var paths = pathname.split('/');
-        if (paths < 3) {
+        if (paths.length < 3) {
             // Invalid
             console.log("Not a valid URL to inject code comparision. Exiting");
             return;
         }
         var navBar = $(".reponav");
         if (debug) console.log(navBar);
+        if (debug) console.log(paths);
         var hrefStr = '/' + paths[1] + '/' + paths[2] + '/compare';
         var compareImg = '<a id="octo-compare" class="js-selected-navigation-item reponav-item" href="' + hrefStr + '">' +
             '<svg class="octicon octicon-git-compare" viewBox="0 0 14 16" version="1.1" width="14" height="16" aria-hidden="true"><path fill-rule="evenodd" ' +
@@ -47,6 +48,12 @@
         console.log("Injecting Compare Link");
         $(".reponav a:eq(5)").after(compareImg);
         checkIfCompareStillExists();
+
+        // Check if on release page
+        if (paths.length >= 4 && paths[3] == 'releases') {
+            console.log("On Release page, processing releases plugin");
+            processReleaseCommits(paths);
+        }
     }
 
     function checkIfCompareStillExists() {
@@ -59,6 +66,47 @@
             if (debug && verbose) console.log("Exists. Checking again in 5 seconds");
             setTimeout(checkIfCompareStillExists, 5000); // Check every 5 seconds
         }
+    }
+
+    function logCommits(tag, count) {
+        if (debug) console.log("Commits to master since " + tag + ": " + count.trim());
+    }
+
+    function processReleaseCommits(paths) {
+        var releases = $(".release-entry .release.label-latest, .release-entry .release.label-");
+        $.each(releases, function(index,value) {
+            if (debug && verbose) console.log(index + ": " + value);
+            var tag = $(value).find(".d-none li.d-block span.css-truncate-target");
+            if (debug && verbose) console.log("Tag: " + $(tag).text());
+            var compareStr = $(tag).text() + "...master";
+            var compareURL = "/" + paths[1] + "/" + paths[2] + "/compare/" + compareStr;
+            var entry = $(value).find(".release-header .f5");
+            if ($(entry).text().includes("since this release") !== true) {
+                var append = "<span id='edit-" + index + "' class='text-gray'>·\tLoading commits since this release...</span>";
+                $(entry).append(append);
+                $(entry).find('#edit-' + index).load(compareURL, function(data) {
+                    var result = ''; // Used to print the final information
+
+                    // If there are too many commits check
+                    var tooManyCommits = $(data).find(".tabnav a:eq(0) .Counter");
+                    if (tooManyCommits.length != 0) {
+                        result = '·\t<a href=' + compareURL + '>' + tooManyCommits.text() + ' commits</a> to master since this release';
+                        logCommits(tag.text(), tooManyCommits.text());
+                    }
+                    else {
+                        // Check for few commits
+                        var someCommits = $(data).find(".numbers-summary li:eq(0) .num.text-emphasized");
+                        if (someCommits.length != 0) {
+                            result = '·\t<a href=' + compareURL + '>' + someCommits.text() + ' commits</a> to master since this release';
+                            logCommits(tag.text(), someCommits.text());
+                        } else logCommits(tag.text(), "0");
+                    }
+
+                    $('#edit-' + index).html(result);
+
+                });
+            }
+        });
     }
 
 })();
