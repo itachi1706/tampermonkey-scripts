@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHub Tools
 // @namespace    http://itachi1706.com/
-// @version      1.1
+// @version      1.2
 // @description  Small tweaks to GitHub for QoL improvements
 // @author       Kenneth Soh (itachi1706) <kenneth@itachi1706.com>
 // @updateURL    https://github.com/itachi1706/tampermonkey-scripts/raw/master/GitHubTools.user.js
@@ -97,7 +97,8 @@
                         // Check for few commits
                         var someCommits = $(data).find(".numbers-summary li:eq(0) .num.text-emphasized");
                         if (someCommits.length != 0) {
-                            result = '·\t<a href=' + compareURL + '>' + someCommits.text() + ' commits</a> to master since this release';
+                            var c = (parseInt(someCommits.text()) == 1) ? 'commit' : 'commits';
+                            result = '·\t<a href=' + compareURL + '>' + someCommits.text() + ' ' + c + '</a> to master since this release';
                             logCommits(tag.text(), someCommits.text());
                         } else logCommits(tag.text(), "0");
                     }
