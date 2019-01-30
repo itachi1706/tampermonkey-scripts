@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHub Tools
 // @namespace    http://itachi1706.com/
-// @version      1.2
+// @version      1.3
 // @description  Small tweaks to GitHub for QoL improvements
 // @author       Kenneth Soh (itachi1706) <kenneth@itachi1706.com>
 // @updateURL    https://github.com/itachi1706/tampermonkey-scripts/raw/master/GitHubTools.user.js
@@ -34,6 +34,10 @@
         if (paths.length < 3) {
             // Invalid
             console.log("Not a valid URL to inject code comparision. Exiting");
+            return;
+        }
+        if (paths[1] == "settings") {
+            console.log("Detected User Settings. Exiting");
             return;
         }
         var navBar = $(".reponav");
