@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         NTULearn Video Downloader
 // @namespace    http://itachi1706.com/
-// @version      1.1
+// @version      1.2
 // @description  Adds a download button to the NTULearn AcuLearn Video Interface
 // @updateURL    https://github.com/itachi1706/tampermonkey-scripts/raw/master/NTULearnVideoDownloader.user.js
 // @author       Kenneth Soh (itachi1706) <kenneth@itachi1706.com>
@@ -12,7 +12,7 @@
 (function() {
     'use strict';
 
-    var debug = true;
+    var debug = false;
     var verbose = false;
 
     // Your code here...
@@ -78,5 +78,52 @@
         if (debug && verbose) console.log(download);
 
         videoControls.insertBefore(download, settingCog);
+
+        if (this.video1 != null) {
+            console.log("Found video object, injecting custom speed handler");
+            customSpeedInject(this.video1, videoControls);
+        }
+    }
+
+    function customSpeedInject(video, control) {
+        if (debug && verbose) console.log(video);
+        var menu = control.getElementsByClassName('arv_menu')[0];
+        if (debug && verbose) console.log(menu);
+        var speed = menu.getElementsByClassName('vjs-menu-item')[1]; // Speed var is the 2nd child
+        if (debug && verbose) console.log(speed);
+        var speedText = speed.childNodes[1];
+        console.log("Current Video Speed: " + speedText.innerText.substring(0, speedText.innerText.length - 2));
+
+        var speedMenu = control.getElementsByClassName('arv_rate')[0];
+        if (debug && verbose) console.log(speedMenu);
+        var customSpeedBox = document.createElement('input');
+        customSpeedBox.innerText = "Help la";
+        customSpeedBox.className = "vjs-menu-item";
+        customSpeedBox.placeholder = "Custom Speed (0.1 - 10)"; // Note: Anything above 4 will not have sound
+        // Try and add an event handler
+        customSpeedBox.addEventListener("keyup", function(event) {
+            event.preventDefault(); // Cancel the default action, if needed
+            // Number 13 is the "Enter" key on the keyboard
+            if (event.keyCode === 13) {
+                var val = customSpeedBox.value;
+                if (debug) console.log("Entered value: " + val);
+                var num = parseFloat(val);
+                if (isNaN(num)) {
+                    alert("You have not entered a valid number. Please enter a number from 0.1 - 10");
+                    return;
+                }
+                if (debug) console.log("Parsed Number: " + num);
+                if (num < 0.1 || num > 10) {
+                    alert("Invalid range. Please enter a number from 0.1 - 10");
+                    return;
+                }
+
+                console.log("Attempting to set custom video speed at " + num + "x");
+                speedText.innerText = "Custom (" + num + "x) >";
+                video.playbackRate = num;
+            }
+        });
+
+        speedMenu.appendChild(customSpeedBox);
     }
 })();
