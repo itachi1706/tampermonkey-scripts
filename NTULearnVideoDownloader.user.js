@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         NTULearn Video Downloader
 // @namespace    http://itachi1706.com/
-// @version      1.2
+// @version      1.3
 // @description  Adds a download button to the NTULearn AcuLearn Video Interface
 // @updateURL    https://github.com/itachi1706/tampermonkey-scripts/raw/master/NTULearnVideoDownloader.user.js
 // @author       Kenneth Soh (itachi1706) <kenneth@itachi1706.com>
@@ -52,7 +52,8 @@
         }
 
         // Get Video Info
-        var videoURL = document.getElementById('Video1_html5_api').src;
+        var video = document.getElementById('Video1_html5_api');
+        var videoURL = video.src;
         var formattedTitle = videoTitle.replace(/\((.*?)\)/g, '');
         formattedTitle = formattedTitle.trim();
 
@@ -79,9 +80,9 @@
 
         videoControls.insertBefore(download, settingCog);
 
-        if (this.video1 != null) {
+        if (video != null) {
             console.log("Found video object, injecting custom speed handler");
-            customSpeedInject(this.video1, videoControls);
+            customSpeedInject(video, videoControls);
         }
     }
 
@@ -89,7 +90,19 @@
         if (debug && verbose) console.log(video);
         var menu = control.getElementsByClassName('arv_menu')[0];
         if (debug && verbose) console.log(menu);
-        var speed = menu.getElementsByClassName('vjs-menu-item')[1]; // Speed var is the 2nd child
+        var speedArr = menu.getElementsByClassName('vjs-menu-item');
+        if (debug && verbose) console.log(speedArr);
+        var speed = null;
+        for (let element of speedArr) {
+            if (debug && verbose) console.log(element);
+            if (element.childNodes[0].innerText == "Speed") {
+                speed = element;
+            }
+        }
+        if (speed == null) {
+            console.log("Unable to find speed toggle, disabling speed handler");
+            return;
+        }
         if (debug && verbose) console.log(speed);
         var speedText = speed.childNodes[1];
         console.log("Current Video Speed: " + speedText.innerText.substring(0, speedText.innerText.length - 2));
