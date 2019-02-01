@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHub Tools
 // @namespace    http://itachi1706.com/
-// @version      1.3
+// @version      1.4
 // @description  Small tweaks to GitHub for QoL improvements
 // @author       Kenneth Soh (itachi1706) <kenneth@itachi1706.com>
 // @updateURL    https://github.com/itachi1706/tampermonkey-scripts/raw/master/GitHubTools.user.js
@@ -43,6 +43,24 @@
         var navBar = $(".reponav");
         if (debug) console.log(navBar);
         if (debug) console.log(paths);
+        // Trying to find insight to insert after. Otherwise insert before settings, otherwise insert at end
+        var iInto = null;
+        var iBefore = false;
+        $(navBar).children().each(function(i, element) {
+            if (debug && verbose) console.log(element);
+            iInto = element; // Always insert after the last element if all is not met
+            if ($(element).text().indexOf("Insights") >= 0) {
+                console.log("Found Insights, will add compare to the right of it");
+                iInto = element;
+                return false;
+            } else if ($(element).text().indexOf("Settings") >= 0) {
+                console.log("Found Settings, will add compare to the left of it");
+                iInto = element;
+                iBefore = true;
+                return false;
+            }
+        });
+
         var hrefStr = '/' + paths[1] + '/' + paths[2] + '/compare';
         var compareImg = '<a id="octo-compare" class="js-selected-navigation-item reponav-item" href="' + hrefStr + '">' +
             '<svg class="octicon octicon-git-compare" viewBox="0 0 14 16" version="1.1" width="14" height="16" aria-hidden="true"><path fill-rule="evenodd" ' +
@@ -50,7 +68,8 @@
             '1.2 0 .65-.55 1.2-1.2 1.2C1.35 4.2.8 3.65.8 3c0-.65.55-1.2 1.2-1.2zm11 9.48V5c-.03-.78-.34-1.47-.94-2.06-.6-.59-1.28-.91-2.06-.94H9V0L6 3l3 3V4h1c.27.02.48.11.69.31.21.2.3.42.31.69v6.28A1.993 1.993 ' +
             '0 0 0 12 15a1.993 1.993 0 0 0 1-3.72zm-1 2.92c-.66 0-1.2-.55-1.2-1.2 0-.65.55-1.2 1.2-1.2.65 0 1.2.55 1.2 1.2 0 .65-.55 1.2-1.2 1.2z"></path></svg>      Compare</a>';
         console.log("Injecting Compare Link");
-        $(".reponav a:eq(5)").after(compareImg);
+        if (!iBefore) $(iInto).after(compareImg);
+        else $(iInto).before(compareImg);
         checkIfCompareStillExists();
 
         // Check if on release page
