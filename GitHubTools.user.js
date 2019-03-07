@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHub Tools
 // @namespace    http://itachi1706.com/
-// @version      1.5
+// @version      1.6
 // @description  Small tweaks to GitHub for QoL improvements
 // @author       Kenneth Soh (itachi1706) <kenneth@itachi1706.com>
 // @updateURL    https://github.com/itachi1706/tampermonkey-scripts/raw/master/GitHubTools.user.js
@@ -16,6 +16,7 @@
     // Your code here...
     var debug = false;
     var verbose = false;
+    var compareFailureCount = 0; // If it exceeds 10 we stop trying since there is no point lol
     console.log("Activating script " + GM_info.script.name + " by " + GM_info.script.author + ". Version: " + GM_info.script.version);
     var $ = window.jQuery;
 
@@ -72,6 +73,7 @@
             '1.2 0 .65-.55 1.2-1.2 1.2C1.35 4.2.8 3.65.8 3c0-.65.55-1.2 1.2-1.2zm11 9.48V5c-.03-.78-.34-1.47-.94-2.06-.6-.59-1.28-.91-2.06-.94H9V0L6 3l3 3V4h1c.27.02.48.11.69.31.21.2.3.42.31.69v6.28A1.993 1.993 ' +
             '0 0 0 12 15a1.993 1.993 0 0 0 1-3.72zm-1 2.92c-.66 0-1.2-.55-1.2-1.2 0-.65.55-1.2 1.2-1.2.65 0 1.2.55 1.2 1.2 0 .65-.55 1.2-1.2 1.2z"></path></svg>      Compare</a>';
         console.log("Injecting Compare Link");
+        compareFailureCount = 0; // Reset to 0
         if (!iBefore) $(iInto).after(compareImg);
         else $(iInto).before(compareImg);
         checkIfCompareStillExists();
@@ -86,10 +88,12 @@
     function checkIfCompareStillExists() {
         if (debug && verbose) console.log("Checking if compare icon exists...");
         var check = $("#octo-compare").length;
-        if (check <= 0) {
+        if (check <= 0 && compareFailureCount <= 10) {
+            compareFailureCount++;
             console.log("Compare Link Lost. Reinjecting into page");
             process();
-        } else {
+        } else if (compareFailureCount > 10) console.log("Compare check failed 10 times. Stopping attempts to inject the link in");
+        else {
             if (debug && verbose) console.log("Exists. Checking again in 5 seconds");
             setTimeout(checkIfCompareStillExists, 5000); // Check every 5 seconds
         }
