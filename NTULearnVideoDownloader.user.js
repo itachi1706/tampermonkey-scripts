@@ -1,13 +1,15 @@
 // ==UserScript==
 // @name         NTULearn Video Downloader
 // @namespace    http://itachi1706.com/
-// @version      1.3
+// @version      1.4
 // @description  Adds a download button to the NTULearn AcuLearn Video Interface
 // @updateURL    https://github.com/itachi1706/tampermonkey-scripts/raw/master/NTULearnVideoDownloader.user.js
 // @author       Kenneth Soh (itachi1706) <kenneth@itachi1706.com>
 // @match        https://*.ntu.edu.sg/aculearn*
-// @grant        none
+// @grant        GM_addStyle
 // ==/UserScript==
+
+GM_addStyle(`.arv_quality.vjs-hidden, .arv_rate.vjs-hidden, .arv_subtitle.vjs-hidden { display: block !important; right: -18em; }`);
 
 (function() {
     'use strict';
