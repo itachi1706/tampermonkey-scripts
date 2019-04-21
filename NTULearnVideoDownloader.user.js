@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         NTULearn Video Downloader
 // @namespace    http://itachi1706.com/
-// @version      1.4
+// @version      1.5
 // @description  Adds a download button to the NTULearn AcuLearn Video Interface
 // @updateURL    https://github.com/itachi1706/tampermonkey-scripts/raw/master/NTULearnVideoDownloader.user.js
 // @author       Kenneth Soh (itachi1706) <kenneth@itachi1706.com>
@@ -81,6 +81,14 @@ GM_addStyle(`.arv_quality.vjs-hidden, .arv_rate.vjs-hidden, .arv_subtitle.vjs-hi
         if (debug && verbose) console.log(download);
 
         videoControls.insertBefore(download, settingCog);
+
+        // Disable right click prevention
+        var bod = document.getElementsByTagName('body')[0];
+        if (debug && verbose) console.log(bod);
+        if (bod != null && bod.oncontextmenu != null) {
+            console.log("Resetting right click prevention in LAMS Videos");
+            bod.oncontextmenu = null;
+        }
 
         if (video != null) {
             console.log("Found video object, injecting custom speed handler");
