@@ -2,7 +2,7 @@
 // @name         NTULearn Video Downloader
 // @namespace    http://itachi1706.com/
 // @version      1.5
-// @description  Adds a download button to the NTULearn AcuLearn Video Interface
+// @description  QoL improvements to the NTULearn AcuLearn Video Interface. Download button, custom speed handler and reenables right click!
 // @updateURL    https://github.com/itachi1706/tampermonkey-scripts/raw/master/NTULearnVideoDownloader.user.js
 // @author       Kenneth Soh (itachi1706) <kenneth@itachi1706.com>
 // @match        https://*.ntu.edu.sg/aculearn*
@@ -28,7 +28,6 @@ GM_addStyle(`.arv_quality.vjs-hidden, .arv_rate.vjs-hidden, .arv_subtitle.vjs-hi
     link.rel = 'stylesheet';
     link.type = 'text/css';
     link.href = 'https://use.fontawesome.com/releases/v5.6.3/css/all.css';
-    //link.integrity = 'sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/'; // Requires CORS
     link.crossorigin = 'anonymous';
     document.getElementsByTagName("HEAD")[0].appendChild(link);
 
@@ -47,10 +46,6 @@ GM_addStyle(`.arv_quality.vjs-hidden, .arv_rate.vjs-hidden, .arv_subtitle.vjs-hi
         if (titleContainer != null) {
             // Has title, retrieve as video title
             videoTitle = titleContainer.getElementsByClassName('vjs-modal-dialog-content')[0].innerText;
-
-            //console.log("Video Data has not been loaded yet. Retrying in 3 seconds...");
-            //setTimeout(initItems, 3000);
-            //return;
         }
 
         // Get Video Info
@@ -69,7 +64,7 @@ GM_addStyle(`.arv_quality.vjs-hidden, .arv_rate.vjs-hidden, .arv_subtitle.vjs-hi
         if (debug && verbose) console.log(videoControls);
         if (debug && verbose) console.log(settingCog);
 
-        // Create download var
+        // Create download button
         var download = document.createElement('a');
         download.className = 'vjs-control vjs-button';
         download.id = 'download-video-cus';
@@ -122,7 +117,8 @@ GM_addStyle(`.arv_quality.vjs-hidden, .arv_rate.vjs-hidden, .arv_subtitle.vjs-hi
         var customSpeedBox = document.createElement('input');
         customSpeedBox.innerText = "Help la";
         customSpeedBox.className = "vjs-menu-item";
-        customSpeedBox.placeholder = "Custom Speed (0.1 - 10)"; // Note: Anything above 4 will not have sound
+        customSpeedBox.placeholder = "Custom Speed (0.1 - 10)"; // Note: Some speed options will cause the browser to drop sound
+        
         // Try and add an event handler
         customSpeedBox.addEventListener("keyup", function(event) {
             event.preventDefault(); // Cancel the default action, if needed
