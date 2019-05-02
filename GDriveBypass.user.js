@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         For the lolz. Bypassing Google Drive Download Disabling
 // @namespace    http://tampermonkey.net/
-// @version      0.1
-// @description  Bypasses GDrive disabling of download/save/copy. Press 'A' when you are done downloading
+// @version      1.0
+// @description  Bypasses GDrive disabling of download/save/copy. Press 'Ctrl+Alt+S' to start and when you are done downloading
 // @author       Kenneth Soh (itachi1706) <kenneth@itachi1706.com>
 // @updateURL    https://github.com/itachi1706/tampermonkey-scripts/raw/master/GDriveBypass.user.js
 // @match        https://drive.google.com/drive/**/*
@@ -16,34 +16,50 @@
     'use strict';
 
     var blobs = [];
+    var map = {17: false, 18: false, 83: false};
+    var start = false;
+    document.addEventListener('keyup', function(event) {
+    if (event.keyCode in map) {
+        map[event.keyCode] = false;
+    }
+    });
 
     document.addEventListener('keydown', function(event) {
-    if (event.keyCode == 65) {
-        var zip = new JSZip();
-        var count = 0;
-        var lol = blobs.length;
-        console.log("Total Pages: " + lol);
-        blobs.forEach(function(e) {
-            console.log("Processing: " + count);
-            var filename = (count + 1) + "";
-            if (e.type == 'image/webp') {
-                // Process webp base64
-                filename += ".webp";
-            } else if (e.type == 'image/png') {
-                // Process png base64
-                filename += ".png";
+    if (event.keyCode in map) {
+        map[event.keyCode] = true;
+        if (map[17] && map[18] && map[83]) {
+            if (start) {
+                var zip = new JSZip();
+                var count = 0;
+                var lol = blobs.length;
+                console.log("Total Pages: " + lol);
+                blobs.forEach(function(e) {
+                    console.log("Processing: " + count);
+                    var filename = (count + 1) + "";
+                    if (e.type == 'image/webp') {
+                        // Process webp base64
+                        filename += ".webp";
+                    } else if (e.type == 'image/png') {
+                        // Process png base64
+                        filename += ".png";
+                    } else {
+                        filename += ".dat";
+                    }
+                    zip.file(filename, e);
+                    count++;
+                    if (count == lol) {
+                        zip.generateAsync({ type: 'blob' }).then(function(content) {
+                            var zipName = "blob.zip";
+                            saveAs(content, zipName);
+                            start = false;
+                        });
+                    }
+                });
             } else {
-                filename += ".dat";
+                start = true;
+                console.log("Start storing to download");
             }
-            zip.file(filename, e);
-            count++;
-            if (count == lol) {
-                zip.generateAsync({ type: 'blob' }).then(function(content) {
-                        var zipName = "blob.zip";
-                        saveAs(content, zipName);
-                    });
-            }
-        });
+        }
     }
 }, true);
 
@@ -52,8 +68,8 @@
     XMLHttpRequest.prototype.open = function() {
         this.addEventListener('load', function() {
 
-            if (this.responseType === 'blob') {
-                //console.log(this.response);
+            if (this.responseType === 'blob' && start) {
+                console.log(this.response);
                 //console.log(this.response.type);
                 blobs.push(this.response);
             }
