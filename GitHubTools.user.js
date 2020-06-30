@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHub Tools
 // @namespace    http://itachi1706.com/
-// @version      1.6.3
+// @version      1.7.0
 // @description  Small tweaks to GitHub for QoL improvements
 // @author       Kenneth Soh (itachi1706) <kenneth@itachi1706.com>
 // @updateURL    https://github.com/itachi1706/tampermonkey-scripts/raw/master/GitHubTools.user.js
@@ -104,38 +104,34 @@
     }
 
     function processReleaseCommits(paths) {
-        var releases = $(".release-entry .release.label-latest, .release-entry .release.label-");
-        $.each(releases, function(index,value) {
+        $.each($(".release-entry .release.label-latest, .release-entry .release.label-, .release"), function(index,value) {
             if (debug && verbose) console.log(index + ": " + value);
             var tag = $(value).find(".d-none li.d-block span.css-truncate-target");
             if (debug && verbose) console.log("Tag: " + $(tag).text());
-            var compareStr = $(tag).text() + "...master";
-            var compareURL = "/" + paths[1] + "/" + paths[2] + "/compare/" + compareStr;
+            var compareURL = "/" + paths[1] + "/" + paths[2] + "/compare/" + $(tag).text() + "...master";
             var entry = $(value).find(".release-header .f5");
             if ($(entry).text().includes("since this release") !== true) {
-                var append = "<span id='edit-" + index + "' class='text-gray'>·\tLoading commits since this release...</span>";
-                $(entry).append(append);
-                $(entry).find('#edit-' + index).load(compareURL, function(data) {
-                    var result = ''; // Used to print the final information
+                $.ajax({
+                    url: compareURL,
+                    beforeSend: function() { $(entry).append("<span id='edit-" + index + "' class='text-gray'>·\tLoading commits since this release...</span>"); },
+                    success: function (data) {
+                        var commitCnt = '';
 
-                    // If there are too many commits check
-                    var tooManyCommits = $(data).find(".tabnav a:eq(0) .Counter");
-                    if (tooManyCommits.length != 0) {
-                        result = '·\t<a href=' + compareURL + '>' + tooManyCommits.text() + ' commits</a> to master since this release';
-                        logCommits(tag.text(), tooManyCommits.text());
+                        // Check for if GitHub displays the page when there are too many commits
+                        var tooManyCommits = $(data).find(".tabnav a:eq(0) .Counter");
+                        if (tooManyCommits.length != 0) commitCnt = tooManyCommits.text();
+                        else {
+                            var someCommits = $(data).find(".numbers-summary li:eq(0) .num.text-emphasized");
+                            commitCnt = (someCommits.length != 0) ? someCommits.text() : "0";
+                        }
+
+                        logCommits(tag.text(), commitCnt);
+                        $('#edit-' + index).html('·\t<a href=' + compareURL + '>' + commitCnt + ' ' + ((parseInt(commitCnt) == 1) ? 'commit' : 'commits') + '</a> to master since this release');
+                    },
+                    error: function (xhr) {
+                        console.log("Failed to query for compare score for #edit-" + index + ". " + xhr.statusText + xhr.responseText);
+                        $('#edit-' + index).removeClass('text-gray').addClass('text-red').text("·\tFailed to load commits since this release");
                     }
-                    else {
-                        // Check for few commits
-                        var someCommits = $(data).find(".numbers-summary li:eq(0) .num.text-emphasized");
-                        if (someCommits.length != 0) {
-                            var c = (parseInt(someCommits.text()) == 1) ? 'commit' : 'commits';
-                            result = '·\t<a href=' + compareURL + '>' + someCommits.text() + ' ' + c + '</a> to master since this release';
-                            logCommits(tag.text(), someCommits.text());
-                        } else logCommits(tag.text(), "0");
-                    }
-
-                    $('#edit-' + index).html(result);
-
                 });
             }
         });
