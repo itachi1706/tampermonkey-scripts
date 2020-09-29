@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Colab Auto-Reconnect
 // @namespace    http://itachi1706.com/
-// @version      1.0
+// @version      1.1
 // @description  Adds a basic button to toggle auto reconnection in Google Colab
 // @updateURL    https://github.com/itachi1706/tampermonkey-scripts/raw/master/ColabReconnector.user.js
 // @author       Kenneth Soh (itachi1706) <kenneth@itachi1706.com>
@@ -45,6 +45,7 @@
     function clickConnect() {
         console.log("Clicked on connect button");
         document.querySelector("colab-connect-button").click();
+        document.querySelector("colab-sessions-dialog").shadowRoot.getElementById("footer").getElementsByClassName("dismiss")[0].click();
         console.log(id);
     }
 
